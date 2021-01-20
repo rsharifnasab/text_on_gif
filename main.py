@@ -50,15 +50,14 @@ i = 0
 def frame_write_gen(text, font):
 
     place = (0, 0)
-    color = (255, 255, 2)
+    color = (255, 255, 255)
 
-    txt = Image.new('RGBA', font.getsize(text), (255,255,255,0))
+    txt = Image.new('RGBA', font.getsize(text), (255, 255, 255, 0))
 
     d = ImageDraw.Draw(txt)
-    d.text((0,0), text, font=font, fill=color)
-    txt.show()
-    w = txt.rotate(90.5,  expand=1)
-    w.show()
+    d.text((0, 0), text, font=font, fill=color)
+#    txt.show()
+    w = txt.rotate(19.5,  expand=1)
 
     def inner(frame):
         global i
@@ -66,8 +65,11 @@ def frame_write_gen(text, font):
 
         frame = frame.copy()
 
-        draw = ImageDraw.Draw(frame)
-        draw.text(place, text, color, font=font)
+        frame.paste(
+                w,
+            (4, 0),
+            w
+        )
 
         return frame
     return inner
