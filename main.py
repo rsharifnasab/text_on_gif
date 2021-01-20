@@ -4,6 +4,7 @@ from argparse import ArgumentParser
 from sys import stdin, stdout
 import os
 from PIL import Image, ImageSequence
+from PIL import ImageFont, ImageDraw
 
 
 # todo: replace eith argparse.FileType
@@ -35,11 +36,22 @@ def save_gif(frames, out_file):
 i = 0
 
 
-def frame_write_gen(t):
+def frame_write_gen(text):
+
+    place = (0, 0)
+    color = (255, 255, 255)
+    font_file = "./fonts/1.ttf"
+    font_size = 16
+
     def inner(frame):
         global i
         print(f"frame #{i}")
         i += 1
+
+        draw = ImageDraw.Draw(frame)
+        font = ImageFont.truetype(font_file, font_size)
+        draw.text(place, text, color, font=font)
+
         return frame
     return inner
 
