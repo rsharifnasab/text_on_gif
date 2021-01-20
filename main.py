@@ -1,7 +1,9 @@
+#!/usr/bin/python3
+
 from argparse import ArgumentParser
 from sys import stdin, stdout
 import os
-from PIL import Image
+from PIL import Image, ImageSequence
 
 
 # todo: replace eith argparse.FileType
@@ -16,6 +18,41 @@ def open_file_to_read(parser, arg):
 
 def open_file_to_write(parser, arg):
     return open(arg, 'wb') if isinstance(arg, str) else arg
+
+
+def load_gif_frames(inp_file):
+    return ImageSequence.Iterator(Image.open(inp_file))
+
+
+def save_gif(frames, out_file):
+    frames[0].save(out_file,
+                   save_all=True,
+                   format="GIF",
+                   append_imgaes=frames[1:],
+                   optimize=False)
+
+
+i = 0
+
+
+def frame_write_gen(t):
+    def inner(frame):
+        global i
+        print(f"frame #{i}")
+        i += 1
+        return frame
+    return inner
+
+
+def write_on_gif(inp_file, out_file, text):
+    inp_frames = load_gif_frames(inp_file)
+    print("load complete")
+
+    write_on_frame = frame_write_gen(text)
+
+    out_frames = [write_on_frame(frame) for frame in inp_frames]
+
+    save_gif(out_frames, out_file)
 
 
 if __name__ == "__main__":
@@ -38,7 +75,8 @@ if __name__ == "__main__":
                         type=lambda x: open_file_to_write(parser, x),
                         default=stdout.buffer)
 
-    configs = parser.parse_args()
-    print(configs.input_file)
-    print(configs.output_file)
+    conf = parser.parse_args()
+    print(conf.input_file)
+    print(conf.output_file)
 
+    write_on_gif(conf.input_file, conf.output_file, conf.text)
