@@ -33,11 +33,15 @@ def load_gif_frames(inp_file):
 
 
 def save_gif(frames, out_file):
+    print(f"frames count : {len(frames)}")
     frames[0].save(out_file,
                    save_all=True,
                    format="GIF",
-                   append_imgaes=frames[1000:],
-                   optimize=False)
+                   append_images=frames[1:],
+                   optimize=False,
+                   duration=70,
+                   loop=0
+                   )
     out_file.close()
 
 
@@ -53,11 +57,10 @@ def frame_write_gen(text, font):
         global i
         i += 1
 
+        frame = frame.copy()
+
         draw = ImageDraw.Draw(frame)
-        draw.text(place, text, color, font=font)
-        if i == 2:
-            frame.show()
-        #exit(0)
+        #draw.text(place, text, color, font=font)
 
         return frame
     return inner
@@ -68,12 +71,14 @@ def write_on_gif(inp_file, out_file, text, font):
 
     write_on_frame = frame_write_gen(text, font)
 
-    #out_frames = [write_on_frame(frame) for frame in inp_frames]
+    out_frames = [write_on_frame(frame) for frame in inp_frames]
+    """
     out_frames = []
     for f in inp_frames:
         new_frame = write_on_frame(f)
         out_frames.append(new_frame)
-    out_frames = out_frames[:2]
+   # out_frames = out_frames[0:2]
+   """
 
     save_gif(out_frames, out_file)
 
