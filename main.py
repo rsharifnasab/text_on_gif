@@ -4,16 +4,18 @@ import os
 from PIL import Image
 
 
+# todo: replace eith argparse.FileType
+# https://docs.python.org/3/library/argparse.html#argparse.FileType
 def open_file_to_read(parser, arg):
     if not os.path.exists(arg):
         parser.error(f"The file {arg} does not exist!")
         return None
     else:
-        return open(arg, 'r') if isinstance(arg, str) else arg
+        return open(arg, 'rb') if isinstance(arg, str) else arg
 
 
 def open_file_to_write(parser, arg):
-    return open(arg, "w") if isinstance(arg, str) else arg
+    return open(arg, 'wb') if isinstance(arg, str) else arg
 
 
 if __name__ == "__main__":
@@ -28,13 +30,13 @@ if __name__ == "__main__":
                         help="input gif as base file",
                         metavar="FILE",
                         type=lambda x: open_file_to_read(parser, x),
-                        default=stdin)
+                        default=stdin.buffer)
 
     parser.add_argument("-o", "--output", dest="output_file",
                         help="where to save result gif",
                         metavar="FILE",
                         type=lambda x: open_file_to_write(parser, x),
-                        default=stdout)
+                        default=stdout.buffer)
 
     configs = parser.parse_args()
     print(configs.input_file)
