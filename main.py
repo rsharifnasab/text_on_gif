@@ -4,7 +4,7 @@ from argparse import ArgumentParser
 from sys import stdin, stdout, stderr
 import os
 from PIL import Image, ImageSequence
-from PIL import ImageFont, ImageDraw
+from PIL import ImageFont, ImageDraw, ImageOps
 
 
 # todo: replace eith argparse.FileType
@@ -33,7 +33,6 @@ def load_gif_frames(inp_file):
 
 
 def save_gif(frames, out_file):
-    print(f"frames count : {len(frames)}")
     frames[0].save(out_file,
                    save_all=True,
                    format="GIF",
@@ -53,6 +52,14 @@ def frame_write_gen(text, font):
     place = (0, 0)
     color = (255, 255, 2)
 
+    txt = Image.new('RGBA', font.getsize(text), (255,255,255,0))
+
+    d = ImageDraw.Draw(txt)
+    d.text((0,0), text, font=font, fill=color)
+    txt.show()
+    w = txt.rotate(90.5,  expand=1)
+    w.show()
+
     def inner(frame):
         global i
         i += 1
@@ -60,7 +67,7 @@ def frame_write_gen(text, font):
         frame = frame.copy()
 
         draw = ImageDraw.Draw(frame)
-        #draw.text(place, text, color, font=font)
+        draw.text(place, text, color, font=font)
 
         return frame
     return inner
@@ -72,13 +79,6 @@ def write_on_gif(inp_file, out_file, text, font):
     write_on_frame = frame_write_gen(text, font)
 
     out_frames = [write_on_frame(frame) for frame in inp_frames]
-    """
-    out_frames = []
-    for f in inp_frames:
-        new_frame = write_on_frame(f)
-        out_frames.append(new_frame)
-   # out_frames = out_frames[0:2]
-   """
 
     save_gif(out_frames, out_file)
 
