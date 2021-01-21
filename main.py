@@ -46,7 +46,7 @@ def save_gif(frames, out_file):
 
 
 def create_text_image(text, font, color):
-    txt = Image.new('RGBA', font.getsize(text), (255, 255, 250, 100))
+    txt = Image.new('RGBA', font.getsize(text), (255, 255, 250, 70))
     dr = ImageDraw.Draw(txt)
     dr.text((0, 0), text, color, font=font)
     return txt
@@ -79,14 +79,11 @@ def calculate_p1_p2(frame, place):
 
 def frame_write_gen(text, font, place, example_frame, color):
     p1, p2 = calculate_p1_p2(example_frame, place)
-    print("final text end: ", p2)
 
     txt = create_text_image(text, font, color)
     text_ratio = txt.size[1] / txt.size[0]
-    assert 0 < text_ratio < 1
 
     rotation_degree = calculate_rotation_angle(text_ratio, p1, p2)
-    print(f"rotation degree : {rotation_degree}")
 
     up_p1, down_p1 = calculate_rotated_height(
         text_ratio, rotation_degree, p1, p2)
@@ -96,9 +93,10 @@ def frame_write_gen(text, font, place, example_frame, color):
     rotated_text_size = (
         int(p2[0]-p1[0]), int(up_p1+down_p1))
 
-    rotated_txt = txt.rotate(rotation_degree,  expand=1)
-    final_txt = rotated_txt.resize(rotated_text_size)
+    final_txt = txt.rotate(rotation_degree,  expand=1).resize(rotated_text_size)
 
+    print("final text end: ", p2)
+    print(f"rotation degree : {rotation_degree}")
     print("top left e rotated ", rotated_text_top_left)
     print("size e rotated ", rotated_text_size)
     print("down right e rotated ",
@@ -110,7 +108,7 @@ def frame_write_gen(text, font, place, example_frame, color):
         frame.paste(
             final_txt,
             box=rotated_text_top_left,
-            mask=final_txt
+         #   mask=final_txt
         )
         return frame
     return inner
