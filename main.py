@@ -2,6 +2,7 @@
 
 from argparse import ArgumentParser
 from sys import stdin, stdout, stderr
+from math import tan, atan, degrees, radians, sin, cos, sqrt, isclose
 import os
 from PIL import Image, ImageSequence
 from PIL import ImageFont, ImageDraw, ImageOps
@@ -44,51 +45,73 @@ def save_gif(frames, out_file):
     out_file.close()
 
 
-
-
-
 def create_text_image(text, font, color):
-    txt = Image.new('RGBA', font.getsize(text), (255, 255, 250, 0))
+    txt = Image.new('RGBA', font.getsize(text), (255, 255, 250, 100))
     dr = ImageDraw.Draw(txt)
     dr.text((0, 0), text, color, font=font)
     return txt
 
 
-i = 0
+def calculate_rotation_angle(text_ratio, text_start, text_end):
+    init_tilt = text_ratio
+    rotated_tilt = (text_end[1] - text_start[1])/(text_end[0]-text_start[0])
+    return degrees(atan(init_tilt)-atan(rotated_tilt))
+
+
+def calculate_rotated_height(ab_ratio, theta_deg, p1, p2):
+    theta = radians(theta_deg)
+    ba_ratio = 1 / ab_ratio
+    a2 = ((p2[0]-p1[0])**2 + (p2[1]-p1[1])**2) \
+        / (1 + (ba_ratio**2))
+    a = sqrt(a2)
+    b = ba_ratio * a
+    up_p1 = abs(b * sin(theta))
+    down_p1 = abs(a * cos(theta))
+    return up_p1, down_p1
+
+
+def calculate_p1_p2(frame, place):
+    w, h = frame.size
+    p1 = w * place[0], h * place[1]
+    p2 = w * place[2], h * place[3]
+    return p1, p2
+
+
 def frame_write_gen(text, font, place, example_frame, color):
-    big_width, big_height = example_frame.size
-
-    gh1_x = place[0] * big_width
-    gh1_y = place[1] * big_height
-
-    gh2_x = place[2] * big_width
-    gh2_y = place[3] * big_height
-
+    p1, p2 = calculate_p1_p2(example_frame, place)
+    print("final text end: ", p2)
 
     txt = create_text_image(text, font, color)
-    text_ratio = txt.size[0] / txt.size[1]
+    text_ratio = txt.size[1] / txt.size[0]
+    assert 0 < text_ratio < 1
 
-    rotation_degree = 19
-    text_top_left = (0,0)
-    text_size = (40,70)
+    rotation_degree = calculate_rotation_angle(text_ratio, p1, p2)
+    print(f"rotation degree : {rotation_degree}")
+
+    up_p1, down_p1 = calculate_rotated_height(
+        text_ratio, rotation_degree, p1, p2)
+
+    rotated_text_top_left = int(p1[0]), int(p1[1]) #todo
+
+    rotated_text_size = (
+        int(p2[0]-p1[0]), int(up_p1+down_p1))
 
     rotated_txt = txt.rotate(rotation_degree,  expand=1)
-    final_txt = rotated_txt.resize(text_size)
+    final_txt = rotated_txt.resize(rotated_text_size)
 
-
+    print("top left e rotated ", rotated_text_top_left)
+    print("size e rotated ", rotated_text_size)
+    print("down right e rotated ",
+          (rotated_text_size[0]+rotated_text_top_left[0],
+              rotated_text_size[1]+rotated_text_top_left[1]))
 
     def inner(inp_frame):
-        global i
-        i += 1
-
         frame = inp_frame.copy().convert('RGBA')
-
         frame.paste(
             final_txt,
-            box=text_top_left,
+            box=rotated_text_top_left,
             mask=final_txt
         )
-
         return frame
     return inner
 
