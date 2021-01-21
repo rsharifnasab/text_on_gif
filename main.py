@@ -47,9 +47,9 @@ def save_gif(frames, out_file):
 i = 0
 
 
-def frame_write_gen(text, font, place, example_frame):
-
-    color = (255, 130, 255)
+def frame_write_gen(text, font, place, example_frame, color):
+    big_width, big_height =  example_frame.size
+    print(big_width,big_height)
 
     txt = Image.new('RGBA', font.getsize(text), (255, 255, 250, 0))
 
@@ -73,10 +73,10 @@ def frame_write_gen(text, font, place, example_frame):
     return inner
 
 
-def write_on_gif(inp_file, out_file, text, place, font):
+def write_on_gif(inp_file, out_file, text, place, font, color):
     inp_frames = load_gif_frames(inp_file)
 
-    write_on_frame = frame_write_gen(text, font, place, inp_frames[0])
+    write_on_frame = frame_write_gen(text, font, place, inp_frames[0], color)
 
     out_frames = [write_on_frame(frame) for frame in inp_frames]
 
@@ -146,4 +146,4 @@ if __name__ == "__main__":
     print(conf.color)
 
     write_on_gif(conf.input_file, conf.output_file,
-                 conf.text, conf.place, conf.font)
+                 conf.text, conf.place, conf.font, conf.color)
