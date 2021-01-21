@@ -46,7 +46,7 @@ def save_gif(frames, out_file):
 
 
 def create_text_image(text, font, color):
-    txt = Image.new('RGBA', font.getsize(text), (255, 255, 250, 70))
+    txt = Image.new('RGBA', font.getsize(text), (255, 255, 250, 0))
     dr = ImageDraw.Draw(txt)
     dr.text((0, 0), text, color, font=font)
     return txt
@@ -108,7 +108,7 @@ def frame_write_gen(text, font, place, example_frame, color):
         frame.paste(
             final_txt,
             box=rotated_text_top_left,
-         #   mask=final_txt
+            mask=final_txt
         )
         return frame
     return inner
