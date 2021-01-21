@@ -44,7 +44,6 @@ def save_gif(frames, out_file):
     out_file.close()
 
 
-i = 0
 
 
 
@@ -55,9 +54,9 @@ def create_text_image(text, font, color):
     return txt
 
 
+i = 0
 def frame_write_gen(text, font, place, example_frame, color):
     big_width, big_height = example_frame.size
-    print(big_width, big_height)
 
     gh1_x = place[0] * big_width
     gh1_y = place[1] * big_height
@@ -166,7 +165,6 @@ if __name__ == "__main__":
                               default=(255, 255, 255))
 
     conf = parser.parse_args()
-    print(conf.color)
 
     write_on_gif(conf.input_file, conf.output_file,
                  conf.text, conf.place, conf.font, conf.color)
