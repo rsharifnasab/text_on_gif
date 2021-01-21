@@ -47,26 +47,47 @@ def save_gif(frames, out_file):
 i = 0
 
 
-def frame_write_gen(text, font, place, example_frame, color):
-    big_width, big_height =  example_frame.size
-    print(big_width,big_height)
 
+def create_text_image(text, font, color):
     txt = Image.new('RGBA', font.getsize(text), (255, 255, 250, 0))
+    dr = ImageDraw.Draw(txt)
+    dr.text((0, 0), text, color, font=font)
+    return txt
 
-    d = ImageDraw.Draw(txt)
-    d.text((0, 0), text, color, font=font)
-    w = txt.rotate(19.5,  expand=1)
+
+def frame_write_gen(text, font, place, example_frame, color):
+    big_width, big_height = example_frame.size
+    print(big_width, big_height)
+
+    gh1_x = place[0] * big_width
+    gh1_y = place[1] * big_height
+
+    gh2_x = place[2] * big_width
+    gh2_y = place[3] * big_height
+
+
+    txt = create_text_image(text, font, color)
+    text_ratio = txt.size[0] / txt.size[1]
+
+    rotation_degree = 19
+    text_top_left = (0,0)
+    text_size = (40,70)
+
+    rotated_txt = txt.rotate(rotation_degree,  expand=1)
+    final_txt = rotated_txt.resize(text_size)
+
+
 
     def inner(inp_frame):
         global i
         i += 1
 
-        frame = inp_frame.copy().convert("RGBA")
+        frame = inp_frame.copy().convert('RGBA')
 
         frame.paste(
-            w,
-            box=(4, 70),
-            mask=w
+            final_txt,
+            box=text_top_left,
+            mask=final_txt
         )
 
         return frame
@@ -107,6 +128,7 @@ def parse_color(inp, parser):
     else:
         return color_tup
 
+
 if __name__ == "__main__":
     parser = ArgumentParser(
         prog="main.py",
@@ -115,6 +137,7 @@ if __name__ == "__main__":
     )
     parser.add_argument("-t", "--text", type=str, required=True,
                         help="your text to be added on gif")
+
     parser.add_argument("-i", "--input", dest="input_file",
                         help="input gif as base file",
                         metavar="FILE",
@@ -138,9 +161,9 @@ if __name__ == "__main__":
                         default=(0, 0, 1, 1))
 
     parser.add_argument("-c", "--color", dest="color",
-                        help="your text color",
-                        type=lambda c: parse_color(c, parser),
-                        default=(255, 255, 255))
+                              help="your text color",
+                              type=lambda c: parse_color(c, parser),
+                              default=(255, 255, 255))
 
     conf = parser.parse_args()
     print(conf.color)
