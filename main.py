@@ -47,15 +47,14 @@ def save_gif(frames, out_file):
 i = 0
 
 
-def frame_write_gen(text, font):
+def frame_write_gen(text, font, place, example_frame):
 
-    place = (0, 0)
     color = (255, 130, 255)
 
     txt = Image.new('RGBA', font.getsize(text), (255, 255, 250, 0))
 
     d = ImageDraw.Draw(txt)
-    d.text((0, 0), text,color, font=font )
+    d.text((0, 0), text, color, font=font)
     w = txt.rotate(19.5,  expand=1)
 
     def inner(inp_frame):
@@ -66,7 +65,7 @@ def frame_write_gen(text, font):
 
         frame.paste(
             w,
-            box = (4, 70),
+            box=(4, 70),
             mask=w
         )
 
@@ -77,14 +76,15 @@ def frame_write_gen(text, font):
 def write_on_gif(inp_file, out_file, text, place, font):
     inp_frames = load_gif_frames(inp_file)
 
-    write_on_frame = frame_write_gen(text, font)
+    write_on_frame = frame_write_gen(text, font, place, inp_frames[0])
 
     out_frames = [write_on_frame(frame) for frame in inp_frames]
 
     save_gif(out_frames, out_file)
 
+
 def parse_place(inp, parser):
-    place_tup = tuple(map(float,inp.strip().replace(" ", ",").split(",")))
+    place_tup = tuple(map(float, inp.strip().replace(" ", ",").split(",")))
     if not len(place_tup) == 4:
         parser.error("you should enter exactly 4 numbers, seperated by ','")
         return None
@@ -94,6 +94,18 @@ def parse_place(inp, parser):
     else:
         return place_tup
 
+
+def parse_color(inp, parser):
+    color_tup = tuple(map(int, inp.strip().replace(" ", ",").split(",")))
+    if not len(color_tup) == 3:
+        parser.error(
+            "you should enter exactly 3 numbers for rgb, seperated by ','")
+        return None
+    elif min(color_tup) < 0 or max(color_tup) > 255:
+        parser.error("colors should be between 0 and 255")
+        return None
+    else:
+        return color_tup
 
 if __name__ == "__main__":
     parser = ArgumentParser(
@@ -121,10 +133,17 @@ if __name__ == "__main__":
                         default=ImageFont.load_default())
 
     parser.add_argument("-p", "--place", dest="place",
-            help="specify up-left and down right position of image, relative",
-            type= lambda d : parse_place(d, parser),
-            default=(0,0,1,1))
+                        help="specify up-left and down right position of image, relative",
+                        type=lambda d: parse_place(d, parser),
+                        default=(0, 0, 1, 1))
+
+    parser.add_argument("-c", "--color", dest="color",
+                        help="your text color",
+                        type=lambda c: parse_color(c, parser),
+                        default=(255, 255, 255))
 
     conf = parser.parse_args()
+    print(conf.color)
 
-    write_on_gif(conf.input_file, conf.output_file, conf.text, conf.place, conf.font)
+    write_on_gif(conf.input_file, conf.output_file,
+                 conf.text, conf.place, conf.font)
