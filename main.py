@@ -50,25 +50,24 @@ i = 0
 def frame_write_gen(text, font):
 
     place = (0, 0)
-    color = (255, 255, 255)
+    color = (255, 130, 255)
 
-    txt = Image.new('RGBA', font.getsize(text), (255, 255, 255, 0))
+    txt = Image.new('RGBA', font.getsize(text), (255, 255, 250, 0))
 
     d = ImageDraw.Draw(txt)
-    d.text((0, 0), text, font=font, fill=color)
-#    txt.show()
+    d.text((0, 0), text,color, font=font )
     w = txt.rotate(19.5,  expand=1)
 
-    def inner(frame):
+    def inner(inp_frame):
         global i
         i += 1
 
-        frame = frame.copy()
+        frame = inp_frame.copy().convert("RGBA")
 
         frame.paste(
-                w,
-            (4, 0),
-            w
+            w,
+            box = (4, 70),
+            mask=w
         )
 
         return frame
@@ -107,7 +106,7 @@ if __name__ == "__main__":
 
     parser.add_argument("-f", "--font", dest="font",
                         help="specify text font",
-                        type=lambda f: ImageFont.truetype(f, size=100),
+                        type=lambda f: ImageFont.truetype(f, size=60),
                         default=ImageFont.load_default())
 
     conf = parser.parse_args()
