@@ -74,7 +74,7 @@ def frame_write_gen(text, font):
     return inner
 
 
-def write_on_gif(inp_file, out_file, text, font):
+def write_on_gif(inp_file, out_file, text, place, font):
     inp_frames = load_gif_frames(inp_file)
 
     write_on_frame = frame_write_gen(text, font)
@@ -82,6 +82,17 @@ def write_on_gif(inp_file, out_file, text, font):
     out_frames = [write_on_frame(frame) for frame in inp_frames]
 
     save_gif(out_frames, out_file)
+
+def parse_place(inp, parser):
+    place_tup = tuple(map(float,inp.strip().replace(" ", ",").split(",")))
+    if not len(place_tup) == 4:
+        parser.error("you should enter exactly 4 numbers, seperated by ','")
+        return None
+    elif min(place_tup) < 0 or max(place_tup) > 1:
+        parser.error("places should be between 0 and 1")
+        return None
+    else:
+        return place_tup
 
 
 if __name__ == "__main__":
@@ -106,9 +117,14 @@ if __name__ == "__main__":
 
     parser.add_argument("-f", "--font", dest="font",
                         help="specify text font",
-                        type=lambda f: ImageFont.truetype(f, size=60),
+                        type=lambda f: ImageFont.truetype(f, size=100),
                         default=ImageFont.load_default())
+
+    parser.add_argument("-p", "--place", dest="place",
+            help="specify up-left and down right position of image, relative",
+            type= lambda d : parse_place(d, parser),
+            default=(0,0,1,1))
 
     conf = parser.parse_args()
 
-    write_on_gif(conf.input_file, conf.output_file, conf.text, conf.font)
+    write_on_gif(conf.input_file, conf.output_file, conf.text, conf.place, conf.font)
